@@ -3,6 +3,7 @@ const { Telegraf } = require('telegraf');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
@@ -512,6 +513,17 @@ bot.action('confirm_no', wrapAction('confirm_no'), (ctx) => {
 // ==================== ЗАПУСК ====================
 
 log('🚀 Бот запускается...');
+
+const PORT = process.env.PORT || 3000;
+const http = require('http');
+
+// Создаём простой HTTP сервер для Render
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ status: 'Bot is running' }));
+}).listen(PORT, () => {
+  log(`🌐 HTTP сервер слушает порт ${PORT}`);
+});
 
 bot.launch();
 
