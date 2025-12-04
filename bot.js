@@ -515,27 +515,37 @@ bot.action('confirm_no', wrapAction('confirm_no'), (ctx) => {
 log('🚀 Бот запускается...');
 
 const PORT = process.env.PORT || 3000;
+const DOMAIN = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
 
-// Создаём простой HTTP сервер для Render
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ status: 'Bot is running' }));
-}).listen(PORT, () => {
-  log(`🌐 HTTP сервер слушает порт ${PORT}`);
+// Вебхук для Telegram
+const server = require('http').createServer((req, res) => {
+  // Обработка вебхука от Telegram
+  bot.webhookCallback('/webhook')(req, res).catch(err => {
+    log('❌ ОШИБКА при обработке вебхука', { error: err.message });
+  });
 });
 
-bot.launch();
+// Установка вебхука
+bot.telegram.setWebhook(`${DOMAIN}/webhook`).then(() => {
+  log('✅ Вебхук установлен на: ' + `${DOMAIN}/webhook`);
+}).catch(err => {
+  log('❌ ОШИБКА при установке вебхука', { error: err.message });
+});
 
-log('🤖 Бот успешно запущен!');
+server.listen(PORT, () => {
+  log(`🌐 HTTP сервер слушает на порту ${PORT}`);
+});
+
+log('🤖 Бот успешно запущен с вебхуками!');
 
 process.once('SIGINT', () => {
   log('⛔ Бот остановлен (SIGINT)');
-  bot.stop('SIGINT');
+  server.close();
 });
 
 process.once('SIGTERM', () => {
   log('⛔ Бот остановлен (SIGTERM)');
-  bot.stop('SIGTERM');
+  server.close();
 });
 
 log('✅ Обработчики событий подключены');
