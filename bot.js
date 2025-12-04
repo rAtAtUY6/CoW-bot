@@ -515,7 +515,6 @@ bot.action('confirm_no', wrapAction('confirm_no'), (ctx) => {
 log('🚀 Бот запускается...');
 
 const PORT = process.env.PORT || 3000;
-const http = require('http');
 
 // Создаём простой HTTP сервер для Render
 http.createServer((req, res) => {
